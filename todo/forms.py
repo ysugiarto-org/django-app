@@ -6,4 +6,5 @@ class TodoForm(forms.ModelForm):
     
     class Meta:
         model = Todo
-        fields = "__all__"
+        #fields = "__all__"
+        fields = ['title', 'description', 'is_completed']

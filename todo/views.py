@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 
 def get_filtered_todos(request, todos):
@@ -15,8 +16,9 @@ def get_filtered_todos(request, todos):
             return todos.filter(is_completed = False)
     return todos
 
+@login_required
 def index(request):
-    todos = Todo.objects.all()
+    todos = Todo.objects.filter(owner=request.user)
     
     completed_count = todos.filter(is_completed = True).count()
     incomplete_count = todos.filter(is_completed = False).count()
@@ -30,6 +32,7 @@ def index(request):
                }
     return render(request, "todo/index.html", context)
 
+@login_required
 def create_todo(request):
     form = TodoForm()
     context = {'form': form}
@@ -43,7 +46,7 @@ def create_todo(request):
         todo.title = title
         todo.description = description
         todo.is_completed = True if is_completed == "on" else False
-        
+        todo.owner = request.user
         todo.save()
         
         messages.add_message(request, messages.SUCCESS, f'Todo "{todo.title}" created successfully.')
@@ -52,24 +55,30 @@ def create_todo(request):
         
     return render(request, "todo/create-todo.html", context)
 
+@login_required
 def todo_detail(request, id):
     todo = get_object_or_404(Todo, pk=id)
     context = {'todo': todo}
     return render(request, "todo/todo-detail.html", context)
 
+@login_required
 def todo_delete(request, id):
     todo = get_object_or_404(Todo, pk=id)
     context = {'todo': todo}
     
     if request.method == 'POST':
-        todo.delete()
+        if todo.owner == request.user:
+            todo.delete()
+            
+            messages.add_message(request, messages.WARNING, f'Todo "{todo.title}" has been deleted.')
+            
+            return HttpResponseRedirect(reverse("home"))
         
-        messages.add_message(request, messages.WARNING, f'Todo "{todo.title}" has been deleted.')
-        
-        return HttpResponseRedirect(reverse("home"))
+        return render(request, "todo/todo-delete.html", context)
         
     return render(request, "todo/todo-delete.html", context)
 
+@login_required
 def todo_edit(request, id):
     todo = get_object_or_404(Todo, pk=id)
     form = TodoForm(instance=todo)
@@ -85,10 +94,12 @@ def todo_edit(request, id):
         todo.description = description
         todo.is_completed = True if is_completed == "on" else False
         
-        todo.save()
+        if todo.owner == request.user:
+            todo.save()
         
         messages.add_message(request, messages.SUCCESS, f'Todo "{todo.title}" has been edited.')
         
         return HttpResponseRedirect(reverse("todo-detail", kwargs={'id': todo.pk}))
     
     return render(request, "todo/edit-todo.html", context)
+
