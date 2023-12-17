@@ -1,15 +1,72 @@
-{% extends "_partials/base.html" %}
-
-{% load static %}
+{% extends "_partials/base.html" %} 
+{% block title %} Home {% endblock %}
+{% load static %} 
 
 {% block content %}
-    <img src="{% static 'img/logo.png' %}" />
-    <h3>List of Todos</h3>
-    <ul>
-        <li>Test</li>
-        <li>Test</li>
-        <li>Test</li>
-        <li>Test</li>
-        <li>Test</li>
-    </ul>
-    {% endblock content %}
+<h1 class="ui header">My List of Todos</h1>
+
+{% include "_partials/messages.html" %}
+
+{% if todos %}
+
+<table class="ui table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Completed</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for todo in todos %}
+        <tr>
+            <td>{{ todo.title }}</td>
+            <td>{{ todo.description }}</td>
+            <td>
+                {% if todo.is_completed %}
+                YES <i class="check icon green"></i>
+                {% else %}
+                NO
+                {% endif %}
+                <!--{{ todo.is_completed }}-->
+            </td>
+            <td>
+                <a href={% url "todo-detail" todo.pk %} class="ui button">
+                    <i class="eye icon"></i>
+                </a>
+                <a href={% url "edit-todo" todo.pk%} class="ui button">
+                    <i class="pencil icon"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+    <tfoot>
+        <tr>
+            <th>
+                <a href="?filter=all">All {{ all_count }}</a>
+            </th>
+            <th>
+                <a href="?filter=incomplete">{{ incomplete_count }} Remaining</a>
+            </th>
+            <th>
+                <a href="?filter=completed">{{ completed_count }} Completed</a>
+            </th>
+            
+        </tr>
+    </tfoot>
+
+</table>
+
+{% else %}
+
+<div class="ui message">
+    <div class="header">No todos yet</div>
+    <p>You can create <a href={% url "create-todo" %}>here</a></p>
+</div>
+
+{% endif %}
+
+{% endblock content %}
