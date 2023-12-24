@@ -40,8 +40,10 @@ def send_activation_email(user, request):
         from_email=settings.EMAIL_FROM,
         to=[user.email]
     )
-    #email.send()
-    EmailThread(email).start()
+    
+    if not settings.TESTING:
+        #email.send()
+        EmailThread(email).start()
 
 @auth_user_should_not_access
 def register(request):
@@ -75,9 +77,13 @@ def register(request):
             messages.add_message(request, messages.ERROR, 'Username is taken, choose another one')
             context['has_error'] = True
             
+            return render(request, "authentication/register.html", context, status = 409)
+            
         if User.objects.filter(email = email).exists():
             messages.add_message(request, messages.ERROR, 'Email is already used, choose another one')
             context['has_error'] = True
+            
+            return render(request, "authentication/register.html", context, status = 509)
             
         if context['has_error']:
            return render(request, "authentication/register.html", context)
