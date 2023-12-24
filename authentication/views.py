@@ -12,6 +12,15 @@ from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeErr
 from django.core.mail import EmailMessage
 from .utils import generate_token
 from django.conf import settings
+import threading
+
+class EmailThread(threading.Thread):
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+        
+    def run(self):
+        self.email.send()
 
 def send_activation_email(user, request):
     current_site = get_current_site(request)
@@ -31,7 +40,8 @@ def send_activation_email(user, request):
         from_email=settings.EMAIL_FROM,
         to=[user.email]
     )
-    email.send()
+    #email.send()
+    EmailThread(email).start()
 
 @auth_user_should_not_access
 def register(request):
@@ -78,7 +88,7 @@ def register(request):
         
         send_activation_email(user, request)
         
-        messages.add_message(request, messages.SUCCESS, 'Account created successfully!')
+        messages.add_message(request, messages.SUCCESS, 'Account created, please verify your account using the email that has been sent to you!')
         
         return redirect('login')
         
