@@ -1,0 +1,10 @@
+asgiref==3.7.2
+coverage==7.3.4
+Django==4.2.8
+Faker==21.0.0
+psycopg2-binary==2.9.9
+python-dateutil==2.8.2
+six==1.16.0
+sqlparse==0.4.4
+typing_extensions==4.9.0
+validate-email==1.3
