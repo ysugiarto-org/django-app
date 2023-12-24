@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block branding %}
+
+<div style="display: flex; flex-direction: row; align-items: center;">
+    <img class="logo" class="logo" height="40px" src= {% static 'img/logo.png' %} />
+    <h1 id="site-name" style="padding-left: 10px;"><a href="{% url 'admin:index' %}">Todo App Administration</a></h1>
+    {% if user.is_anonymous %}
+    {% include "admin/color_theme_toggle.html" %}
+    {% endif %}
+</div>
+
+{% endblock %}
+
+
+
+{% block extrastyle %}
+
+<link rel="stylesheet" href={% static "css/admin.css" %}>
+
+{% endblock extrastyle %}
